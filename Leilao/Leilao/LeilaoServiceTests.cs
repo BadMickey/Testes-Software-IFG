@@ -13,13 +13,15 @@ namespace Leilao
         private readonly Mock<IEmailService> _emailServiceMock;
         private readonly ILeilaoRepository _leilaoRepository;
         private readonly LeilaoService _leilaoService;
+        private readonly IParticipanteRepository _participanteRepository;
 
         public LeilaoServiceTests()
         {
             // Repositório em memória para testes
             _emailServiceMock = new Mock<IEmailService>();
             _leilaoRepository = new InMemoryLeilaoRepository();
-            _leilaoService = new LeilaoService(_leilaoRepository, _emailServiceMock.Object);
+            _participanteRepository = new InMemoryParticipanteRepository();
+            _leilaoService = new LeilaoService(_leilaoRepository, _emailServiceMock.Object, _participanteRepository);
         }
 
         [Fact]
@@ -113,6 +115,9 @@ namespace Leilao
             var participante1 = new Participante("João", "joao@email.com");
             var participante2 = new Participante("Maria", "maria@email.com");
 
+            _participanteRepository.AdicionarParticipante(participante1);
+            _participanteRepository.AdicionarParticipante(participante2);
+
             _leilaoService.CriarLeilao(leilao);
             _leilaoService.AbrirLeilao(leilao.Id);
             _leilaoService.AdicionarLance(leilao.Id, participante1, 150);
@@ -130,6 +135,8 @@ namespace Leilao
             var leilao = new Leilao("Leilão Teste", DateTime.Now.AddDays(5), 100);
             var participante = new Participante("João", "joao@email.com");
 
+            _participanteRepository.AdicionarParticipante(participante);
+
             _leilaoService.CriarLeilao(leilao);
 
             Assert.Throws<InvalidOperationException>(() =>
@@ -141,6 +148,8 @@ namespace Leilao
         {
             var leilao = new Leilao("Leilão Teste", DateTime.Now.AddDays(5), 100);
             var participante = new Participante("João", "joao@email.com");
+
+            _participanteRepository.AdicionarParticipante(participante);
 
             _leilaoService.CriarLeilao(leilao);
             _leilaoService.AbrirLeilao(leilao.Id);
@@ -155,9 +164,10 @@ namespace Leilao
             var leilao = new Leilao("Leilão Teste", DateTime.Now.AddDays(5), 100);
             var participante = new Participante("João", "joao@email.com");
 
+            _participanteRepository.AdicionarParticipante(participante);
+
             _leilaoService.CriarLeilao(leilao);
             _leilaoService.AbrirLeilao(leilao.Id);
-
             _leilaoService.AdicionarLance(leilao.Id, participante, 150);
 
             Assert.Throws<InvalidOperationException>(() =>
@@ -170,11 +180,12 @@ namespace Leilao
             var leilao = new Leilao("Leilão Teste", DateTime.Now.AddDays(5), 100);
             var participante = new Participante("João", "joao@email.com");
             var participante2 = new Participante("Maria", "maria@email.com");
-
+            
+            _participanteRepository.AdicionarParticipante(participante);
+            _participanteRepository.AdicionarParticipante(participante2);
 
             _leilaoService.CriarLeilao(leilao);
             _leilaoService.AbrirLeilao(leilao.Id);
-
             _leilaoService.AdicionarLance(leilao.Id, participante, 150);
 
 
@@ -189,15 +200,17 @@ namespace Leilao
             var participante1 = new Participante("João", "joao@email.com");
             var participante2 = new Participante("Maria", "maria@email.com");
 
+            _participanteRepository.AdicionarParticipante(participante1);
+            _participanteRepository.AdicionarParticipante(participante2);
+
             _leilaoService.CriarLeilao(leilao);
             _leilaoService.AbrirLeilao(leilao.Id);
             _leilaoService.AdicionarLance(leilao.Id, participante1, 150);
-            _leilaoService.AdicionarLance(leilao.Id, participante2, 200);
-
+            _leilaoService.AdicionarLance(leilao.Id, participante2, 200);//maior lance
             _leilaoService.FinalizarLeilao(leilao.Id);
 
             _emailServiceMock.Verify(
-                es => es.EnviarEmail(participante2.Email, "Parabéns!", $"Você venceu o leilão '{leilao.Titulo}'!"),
+                es => es.EnviarEmail(participante1.Email, "Parabéns!", $"Você venceu o leilão '{leilao.Titulo}'!"),
                 Times.Once
             );
         }
@@ -209,11 +222,13 @@ namespace Leilao
             var participante1 = new Participante("João", "joao@email.com");
             var participante2 = new Participante("Maria", "maria@email.com");
 
+            _participanteRepository.AdicionarParticipante(participante1);
+            _participanteRepository.AdicionarParticipante(participante2);
+
             _leilaoService.CriarLeilao(leilao);
             _leilaoService.AbrirLeilao(leilao.Id);
             _leilaoService.AdicionarLance(leilao.Id, participante1, 150);
             _leilaoService.AdicionarLance(leilao.Id, participante2, 200);
-
             _leilaoService.FinalizarLeilao(leilao.Id);
 
             _emailServiceMock.Verify(
@@ -227,6 +242,30 @@ namespace Leilao
         }
 
         [Fact]
+        public void Deve_Ganhador_Ter_MaiorLance()
+        {
+            var leilao = new Leilao("Leilão Teste", DateTime.Now.AddDays(5), 100);
+            var participante1 = new Participante("João", "joao@email.com");
+            var participante2 = new Participante("Maria", "maria@email.com");
+
+            _participanteRepository.AdicionarParticipante(participante1);
+            _participanteRepository.AdicionarParticipante(participante2);
+
+            _leilaoService.CriarLeilao(leilao);
+            _leilaoService.AbrirLeilao(leilao.Id);
+            _leilaoService.AdicionarLance(leilao.Id, participante1, 150);
+            _leilaoService.AdicionarLance(leilao.Id, participante2, 200);
+            _leilaoService.FinalizarLeilao(leilao.Id);
+
+            var maiorLance = _leilaoService.ObterMaiorLance(leilao.Id);
+            var vencedorEsperado = maiorLance.Participante;
+
+            _emailServiceMock.Verify(
+            es => es.EnviarEmail(vencedorEsperado.Email, "Parabéns!", $"Você venceu o leilão '{leilao.Titulo}'!"),
+                Times.Once
+            );
+        }
+        [Fact]
         public void Deve_Avisar_Sem_Ganhador()
         {
             var leilao = new Leilao("Leilão Teste", DateTime.Now.AddDays(5), 100);
@@ -238,7 +277,99 @@ namespace Leilao
 
             Assert.False(enviou);
         }
-       
+        [Fact]
+        public void Nao_Deve_Adicionar_Lance_Participante_Nao_Cadastrado()
+        {
+            var leilao = new Leilao("Leilão Teste", DateTime.Now.AddDays(5), 100);
+            var participante = new Participante("João", "joao@email.com");
+
+            _leilaoService.CriarLeilao(leilao);
+            _leilaoService.AbrirLeilao(leilao.Id);
+
+            Assert.Throws<InvalidOperationException>(() =>
+                _leilaoService.AdicionarLance(leilao.Id, participante, 150));
+        }
+        [Fact]
+        public void Deve_Adicionar_Lance_Participante_Cadastrado()
+        {
+            // Arrange
+            var leilao = new Leilao("Leilão Teste", DateTime.Now.AddDays(5), 100);
+            var participanteCadastrado = new Participante("Maria", "maria@email.com");
+
+            _participanteRepository.AdicionarParticipante(participanteCadastrado); // Cadastrando o participante
+
+            _leilaoService.CriarLeilao(leilao);
+            _leilaoService.AbrirLeilao(leilao.Id);
+            _leilaoService.AdicionarLance(leilao.Id, participanteCadastrado, 150);
+
+            // Assert
+            var lances = _leilaoService.ObterLances(leilao.Id);
+            Assert.Single(lances);
+            Assert.Equal(150, lances[0].Valor);
+        }
+        [Fact]
+        public void Deve_Retornar_Lances_Em_Ordem_Crescente()
+        {
+            var leilao = new Leilao("Leilão Teste", DateTime.Now.AddDays(5), 100);
+            var participante1 = new Participante("João", "joao@email.com");
+            var participante2 = new Participante("Maria", "maria@email.com");
+
+            _participanteRepository.AdicionarParticipante(participante1);
+            _participanteRepository.AdicionarParticipante(participante2);
+
+            _leilaoService.CriarLeilao(leilao);
+            _leilaoService.AbrirLeilao(leilao.Id);
+            _leilaoService.AdicionarLance(leilao.Id, participante1, 150);
+            _leilaoService.AdicionarLance(leilao.Id, participante2, 200);
+
+            var lancesOrdenados = _leilaoService.ObterLances(leilao.Id);
+            foreach (var lance in lancesOrdenados)
+            {
+                Console.WriteLine($"Participante: {lance.Participante.Nome}, Valor: {lance.Valor}, Data: {lance.Data}");
+            }
+
+            Assert.Equal(150, lancesOrdenados[0].Valor);
+            Assert.Equal(200, lancesOrdenados[1].Valor);
+        }
+
+        [Fact]
+        public void Deve_Retornar_Maior_Lance()
+        {
+            var leilao = new Leilao("Leilão Teste", DateTime.Now.AddDays(5), 100);
+            var participante1 = new Participante("João", "joao@email.com");
+            var participante2 = new Participante("Maria", "maria@email.com");
+
+            _participanteRepository.AdicionarParticipante(participante1);
+            _participanteRepository.AdicionarParticipante(participante2);
+
+            _leilaoService.CriarLeilao(leilao);
+            _leilaoService.AbrirLeilao(leilao.Id);
+            _leilaoService.AdicionarLance(leilao.Id, participante1, 150);
+            _leilaoService.AdicionarLance(leilao.Id, participante2, 200);
+
+            var maiorLance = _leilaoService.ObterMaiorLance(leilao.Id);
+
+            Assert.Equal(200, maiorLance.Valor);
+        }        
+        [Fact]
+        public void Deve_Retornar_Menor_Lance()
+        {
+            var leilao = new Leilao("Leilão Teste", DateTime.Now.AddDays(5), 100);
+            var participante1 = new Participante("João", "joao@email.com");
+            var participante2 = new Participante("Maria", "maria@email.com");
+
+            _participanteRepository.AdicionarParticipante(participante1);
+            _participanteRepository.AdicionarParticipante(participante2);
+
+            _leilaoService.CriarLeilao(leilao);
+            _leilaoService.AbrirLeilao(leilao.Id);
+            _leilaoService.AdicionarLance(leilao.Id, participante1, 150);
+            _leilaoService.AdicionarLance(leilao.Id, participante2, 200);
+
+            var menorLance = _leilaoService.ObterMenorLance(leilao.Id);
+
+            Assert.Equal(150, menorLance.Valor);
+        }
     }
 
     // Repositório em memória para facilitar os testes
@@ -264,6 +395,19 @@ namespace Leilao
             return status.HasValue
                 ? _leiloes.Where(l => l.Status == status).ToList()
                 : _leiloes.ToList();
+        }
+    }
+    public class InMemoryParticipanteRepository : IParticipanteRepository
+    {
+        private readonly List<Participante> _participantes = new();
+        public Participante ObterParticipantePorId(Guid participanteId)
+        {
+            return _participantes.FirstOrDefault(p => p.Id == participanteId);
+        }
+
+        public void AdicionarParticipante(Participante participante)
+        {
+            _participantes.Add(participante);
         }
     }
 }
