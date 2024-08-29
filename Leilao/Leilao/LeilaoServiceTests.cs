@@ -23,6 +23,83 @@ namespace Leilao
             _participanteRepository = new InMemoryParticipanteRepository();
             _leilaoService = new LeilaoService(_leilaoRepository, _emailServiceMock.Object, _participanteRepository);
         }
+        [Fact]
+        public void Deve_Listar_Leilao_Com_Status_Aberto()
+        {
+            var leilao = new Leilao("Leilão Teste", DateTime.Now.AddDays(5), 100);
+            var leilao2 = new Leilao("Leilão Teste 2", DateTime.Now.AddDays(5), 100);
+            var leilao3 = new Leilao("Leilão Teste 3", DateTime.Now.AddDays(5), 100);
+            var leilao4 = new Leilao("Leilão Teste 4", DateTime.Now.AddDays(5), 100);
+            _leilaoService.CriarLeilao(leilao);
+            _leilaoService.CriarLeilao(leilao2);
+            _leilaoService.CriarLeilao(leilao3);
+            _leilaoService.CriarLeilao(leilao4);
+            _leilaoService.AbrirLeilao(leilao3.Id);
+            _leilaoService.AbrirLeilao(leilao4.Id);
+
+            var leiloesAbertos = _leilaoRepository.ListarLeiloes(EstadoLeilao.ABERTO);
+            Assert.Equal(2, leiloesAbertos.Count); 
+            Assert.Contains(leilao3, leiloesAbertos);
+            Assert.Contains(leilao4, leiloesAbertos);//Testando se vai retornar a lista de leilões abertos
+        }
+        [Fact]
+        public void Deve_Listar_Leilao_Com_Status_Finalizado()
+        {
+            var leilao = new Leilao("Leilão Teste", DateTime.Now.AddDays(5), 100);
+            var leilao2 = new Leilao("Leilão Teste 2", DateTime.Now.AddDays(5), 100);
+            var leilao3 = new Leilao("Leilão Teste 3", DateTime.Now.AddDays(5), 100);
+            var leilao4 = new Leilao("Leilão Teste 4", DateTime.Now.AddDays(5), 100);
+            _leilaoService.CriarLeilao(leilao);
+            _leilaoService.CriarLeilao(leilao2);
+            _leilaoService.CriarLeilao(leilao3);
+            _leilaoService.CriarLeilao(leilao4);
+            _leilaoService.AbrirLeilao(leilao3.Id);
+            _leilaoService.AbrirLeilao(leilao4.Id);
+            _leilaoService.FinalizarLeilao(leilao3.Id);
+            _leilaoService.FinalizarLeilao(leilao4.Id);
+
+            var leiloesFinalizados = _leilaoRepository.ListarLeiloes(EstadoLeilao.FINALIZADO);
+            Assert.Equal(2, leiloesFinalizados.Count);
+            Assert.Contains(leilao3, leiloesFinalizados);
+            Assert.Contains(leilao4, leiloesFinalizados);//Testando se vai retornar a lista de leilões Finalizados
+        }
+        [Fact]
+        public void Deve_Listar_Leilao_Com_Status_Expirado()
+        {
+            var leilao = new Leilao("Leilão Teste", DateTime.Now.AddDays(5), 100);
+            var leilao2 = new Leilao("Leilão Teste 2", DateTime.Now.AddDays(5), 100);
+            var leilao3 = new Leilao("Leilão Teste 3", DateTime.Now.AddSeconds(-1), 100);
+            var leilao4 = new Leilao("Leilão Teste 4", DateTime.Now.AddSeconds(-1), 100);
+            _leilaoService.CriarLeilao(leilao);
+            _leilaoService.CriarLeilao(leilao2);
+            _leilaoService.CriarLeilao(leilao3);
+            _leilaoService.CriarLeilao(leilao4);
+            _leilaoService.AbrirLeilao(leilao3.Id);
+            _leilaoService.AbrirLeilao(leilao4.Id);
+            _leilaoService.ExpirarLeilao(leilao3.Id);
+            _leilaoService.ExpirarLeilao(leilao4.Id);
+
+            var leiloesExpirados = _leilaoRepository.ListarLeiloes(EstadoLeilao.EXPIRADO);
+            Assert.Equal(2, leiloesExpirados.Count);
+            Assert.Contains(leilao3, leiloesExpirados);
+            Assert.Contains(leilao4, leiloesExpirados);//Testando se vai retornar a lista de leilões Expirados
+        }
+        [Fact]
+        public void Deve_Listar_Leilao_Com_Status_Inativo()
+        {
+            var leilao = new Leilao("Leilão Teste", DateTime.Now.AddDays(5), 100);
+            var leilao2 = new Leilao("Leilão Teste 2", DateTime.Now.AddDays(5), 100);
+            var leilao3 = new Leilao("Leilão Teste 3", DateTime.Now.AddDays(5), 100);
+            _leilaoService.CriarLeilao(leilao);
+            _leilaoService.CriarLeilao(leilao2);
+            _leilaoService.CriarLeilao(leilao3);
+            _leilaoService.AbrirLeilao(leilao3.Id);
+
+            var leiloesInativos = _leilaoRepository.ListarLeiloes(EstadoLeilao.INATIVO);
+            Assert.Equal(2, leiloesInativos.Count); 
+            Assert.Contains(leilao, leiloesInativos);
+            Assert.Contains(leilao2, leiloesInativos);//Testando se vai retornar a lista de leilões inativos
+        }
 
         [Fact]
         public void Deve_Criar_Leilao_Com_Status_Inativo()
@@ -210,7 +287,7 @@ namespace Leilao
             _leilaoService.FinalizarLeilao(leilao.Id);
 
             _emailServiceMock.Verify(
-                es => es.EnviarEmail(participante1.Email, "Parabéns!", $"Você venceu o leilão '{leilao.Titulo}'!"),
+                es => es.EnviarEmail(participante2.Email, "Parabéns!", $"Você venceu o leilão '{leilao.Titulo}'!"),
                 Times.Once
             );
         }
@@ -231,7 +308,7 @@ namespace Leilao
             _leilaoService.AdicionarLance(leilao.Id, participante2, 200);
             _leilaoService.FinalizarLeilao(leilao.Id);
 
-            _emailServiceMock.Verify(
+            _emailServiceMock.Verify( //Testa se o participante perdedor não recebeu email
                 es => es.EnviarEmail(
                     participante1.Email,
                     It.IsAny<string>(),
@@ -258,10 +335,10 @@ namespace Leilao
             _leilaoService.FinalizarLeilao(leilao.Id);
 
             var maiorLance = _leilaoService.ObterMaiorLance(leilao.Id);
-            var vencedorEsperado = maiorLance.Participante;
+            var vencedorEsperado = maiorLance.Participante;// Pega o participante com maior lance
 
             _emailServiceMock.Verify(
-            es => es.EnviarEmail(vencedorEsperado.Email, "Parabéns!", $"Você venceu o leilão '{leilao.Titulo}'!"),
+            es => es.EnviarEmail(vencedorEsperado.Email, "Parabéns!", $"Você venceu o leilão '{leilao.Titulo}'!"), //Testa se o participante esperado é o mesmo que ganhou
                 Times.Once
             );
         }
@@ -292,19 +369,17 @@ namespace Leilao
         [Fact]
         public void Deve_Adicionar_Lance_Participante_Cadastrado()
         {
-            // Arrange
             var leilao = new Leilao("Leilão Teste", DateTime.Now.AddDays(5), 100);
-            var participanteCadastrado = new Participante("Maria", "maria@email.com");
+            var participante = new Participante("Maria", "maria@email.com");
 
-            _participanteRepository.AdicionarParticipante(participanteCadastrado); // Cadastrando o participante
+            _participanteRepository.AdicionarParticipante(participante); 
 
             _leilaoService.CriarLeilao(leilao);
             _leilaoService.AbrirLeilao(leilao.Id);
-            _leilaoService.AdicionarLance(leilao.Id, participanteCadastrado, 150);
+            _leilaoService.AdicionarLance(leilao.Id, participante, 150);
 
-            // Assert
             var lances = _leilaoService.ObterLances(leilao.Id);
-            Assert.Single(lances);
+            Assert.Single(lances);// Testa se o participante efetuou o lance
             Assert.Equal(150, lances[0].Valor);
         }
         [Fact]
@@ -328,7 +403,7 @@ namespace Leilao
                 Console.WriteLine($"Participante: {lance.Participante.Nome}, Valor: {lance.Valor}, Data: {lance.Data}");
             }
 
-            Assert.Equal(150, lancesOrdenados[0].Valor);
+            Assert.Equal(150, lancesOrdenados[0].Valor);//Teste para retornar os lances ordenados
             Assert.Equal(200, lancesOrdenados[1].Valor);
         }
 
@@ -349,7 +424,7 @@ namespace Leilao
 
             var maiorLance = _leilaoService.ObterMaiorLance(leilao.Id);
 
-            Assert.Equal(200, maiorLance.Valor);
+            Assert.Equal(200, maiorLance.Valor);//Teste para retornar o maior lance
         }        
         [Fact]
         public void Deve_Retornar_Menor_Lance()
@@ -368,7 +443,7 @@ namespace Leilao
 
             var menorLance = _leilaoService.ObterMenorLance(leilao.Id);
 
-            Assert.Equal(150, menorLance.Valor);
+            Assert.Equal(150, menorLance.Valor);//Teste para retornar o menor lance
         }
     }
 
