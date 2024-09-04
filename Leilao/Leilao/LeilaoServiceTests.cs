@@ -13,15 +13,13 @@ namespace Leilao
         private readonly Mock<IEmailService> _emailServiceMock;
         private readonly ILeilaoRepository _leilaoRepository;
         private readonly LeilaoService _leilaoService;
-        private readonly IParticipanteRepository _participanteRepository;
 
         public LeilaoServiceTests()
         {
             // Repositório em memória para testes
             _emailServiceMock = new Mock<IEmailService>();
             _leilaoRepository = new InMemoryLeilaoRepository();
-            _participanteRepository = new InMemoryParticipanteRepository();
-            _leilaoService = new LeilaoService(_leilaoRepository, _emailServiceMock.Object, _participanteRepository);
+            _leilaoService = new LeilaoService(_leilaoRepository, _emailServiceMock.Object);
         }
         [Fact]
         public void Deve_Listar_Leilao_Com_Status_Aberto()
@@ -192,10 +190,9 @@ namespace Leilao
             var participante1 = new Participante("João", "joao@email.com");
             var participante2 = new Participante("Maria", "maria@email.com");
 
-            _participanteRepository.AdicionarParticipante(participante1);
-            _participanteRepository.AdicionarParticipante(participante2);
-
             _leilaoService.CriarLeilao(leilao);
+            _leilaoService.AdicionarParticipante(leilao.Id, participante1);
+            _leilaoService.AdicionarParticipante(leilao.Id, participante2);
             _leilaoService.AbrirLeilao(leilao.Id);
             _leilaoService.AdicionarLance(leilao.Id, participante1, 150);
             _leilaoService.AdicionarLance(leilao.Id, participante2, 200);
@@ -212,9 +209,8 @@ namespace Leilao
             var leilao = new Leilao("Leilão Teste", DateTime.Now.AddDays(5), 100);
             var participante = new Participante("João", "joao@email.com");
 
-            _participanteRepository.AdicionarParticipante(participante);
-
             _leilaoService.CriarLeilao(leilao);
+            _leilaoService.AdicionarParticipante(leilao.Id, participante);
 
             Assert.Throws<InvalidOperationException>(() =>
                 _leilaoService.AdicionarLance(leilao.Id, participante, 150));
@@ -226,9 +222,8 @@ namespace Leilao
             var leilao = new Leilao("Leilão Teste", DateTime.Now.AddDays(5), 100);
             var participante = new Participante("João", "joao@email.com");
 
-            _participanteRepository.AdicionarParticipante(participante);
-
             _leilaoService.CriarLeilao(leilao);
+            _leilaoService.AdicionarParticipante(leilao.Id, participante);
             _leilaoService.AbrirLeilao(leilao.Id);
 
             Assert.Throws<InvalidOperationException>(() =>
@@ -241,9 +236,8 @@ namespace Leilao
             var leilao = new Leilao("Leilão Teste", DateTime.Now.AddDays(5), 100);
             var participante = new Participante("João", "joao@email.com");
 
-            _participanteRepository.AdicionarParticipante(participante);
-
             _leilaoService.CriarLeilao(leilao);
+            _leilaoService.AdicionarParticipante(leilao.Id, participante);
             _leilaoService.AbrirLeilao(leilao.Id);
             _leilaoService.AdicionarLance(leilao.Id, participante, 150);
 
@@ -257,11 +251,10 @@ namespace Leilao
             var leilao = new Leilao("Leilão Teste", DateTime.Now.AddDays(5), 100);
             var participante = new Participante("João", "joao@email.com");
             var participante2 = new Participante("Maria", "maria@email.com");
-            
-            _participanteRepository.AdicionarParticipante(participante);
-            _participanteRepository.AdicionarParticipante(participante2);
 
             _leilaoService.CriarLeilao(leilao);
+            _leilaoService.AdicionarParticipante(leilao.Id, participante);
+            _leilaoService.AdicionarParticipante(leilao.Id, participante2);
             _leilaoService.AbrirLeilao(leilao.Id);
             _leilaoService.AdicionarLance(leilao.Id, participante, 150);
 
@@ -277,10 +270,9 @@ namespace Leilao
             var participante1 = new Participante("João", "joao@email.com");
             var participante2 = new Participante("Maria", "maria@email.com");
 
-            _participanteRepository.AdicionarParticipante(participante1);
-            _participanteRepository.AdicionarParticipante(participante2);
-
             _leilaoService.CriarLeilao(leilao);
+            _leilaoService.AdicionarParticipante(leilao.Id, participante1);
+            _leilaoService.AdicionarParticipante(leilao.Id, participante2);
             _leilaoService.AbrirLeilao(leilao.Id);
             _leilaoService.AdicionarLance(leilao.Id, participante1, 150);
             _leilaoService.AdicionarLance(leilao.Id, participante2, 200);//maior lance
@@ -299,10 +291,9 @@ namespace Leilao
             var participante1 = new Participante("João", "joao@email.com");
             var participante2 = new Participante("Maria", "maria@email.com");
 
-            _participanteRepository.AdicionarParticipante(participante1);
-            _participanteRepository.AdicionarParticipante(participante2);
-
             _leilaoService.CriarLeilao(leilao);
+            _leilaoService.AdicionarParticipante(leilao.Id, participante1);
+            _leilaoService.AdicionarParticipante(leilao.Id, participante2);
             _leilaoService.AbrirLeilao(leilao.Id);
             _leilaoService.AdicionarLance(leilao.Id, participante1, 150);
             _leilaoService.AdicionarLance(leilao.Id, participante2, 200);
@@ -325,10 +316,9 @@ namespace Leilao
             var participante1 = new Participante("João", "joao@email.com");
             var participante2 = new Participante("Maria", "maria@email.com");
 
-            _participanteRepository.AdicionarParticipante(participante1);
-            _participanteRepository.AdicionarParticipante(participante2);
-
             _leilaoService.CriarLeilao(leilao);
+            _leilaoService.AdicionarParticipante(leilao.Id, participante1);
+            _leilaoService.AdicionarParticipante(leilao.Id, participante2);
             _leilaoService.AbrirLeilao(leilao.Id);
             _leilaoService.AdicionarLance(leilao.Id, participante1, 150);
             _leilaoService.AdicionarLance(leilao.Id, participante2, 200);
@@ -372,9 +362,8 @@ namespace Leilao
             var leilao = new Leilao("Leilão Teste", DateTime.Now.AddDays(5), 100);
             var participante = new Participante("Maria", "maria@email.com");
 
-            _participanteRepository.AdicionarParticipante(participante); 
-
             _leilaoService.CriarLeilao(leilao);
+            _leilaoService.AdicionarParticipante(leilao.Id, participante);
             _leilaoService.AbrirLeilao(leilao.Id);
             _leilaoService.AdicionarLance(leilao.Id, participante, 150);
 
@@ -389,10 +378,9 @@ namespace Leilao
             var participante1 = new Participante("João", "joao@email.com");
             var participante2 = new Participante("Maria", "maria@email.com");
 
-            _participanteRepository.AdicionarParticipante(participante1);
-            _participanteRepository.AdicionarParticipante(participante2);
-
             _leilaoService.CriarLeilao(leilao);
+            _leilaoService.AdicionarParticipante(leilao.Id, participante1);
+            _leilaoService.AdicionarParticipante(leilao.Id, participante2);
             _leilaoService.AbrirLeilao(leilao.Id);
             _leilaoService.AdicionarLance(leilao.Id, participante1, 150);
             _leilaoService.AdicionarLance(leilao.Id, participante2, 200);
@@ -414,10 +402,9 @@ namespace Leilao
             var participante1 = new Participante("João", "joao@email.com");
             var participante2 = new Participante("Maria", "maria@email.com");
 
-            _participanteRepository.AdicionarParticipante(participante1);
-            _participanteRepository.AdicionarParticipante(participante2);
-
             _leilaoService.CriarLeilao(leilao);
+            _leilaoService.AdicionarParticipante(leilao.Id, participante1);
+            _leilaoService.AdicionarParticipante(leilao.Id, participante2);
             _leilaoService.AbrirLeilao(leilao.Id);
             _leilaoService.AdicionarLance(leilao.Id, participante1, 150);
             _leilaoService.AdicionarLance(leilao.Id, participante2, 200);
@@ -433,10 +420,9 @@ namespace Leilao
             var participante1 = new Participante("João", "joao@email.com");
             var participante2 = new Participante("Maria", "maria@email.com");
 
-            _participanteRepository.AdicionarParticipante(participante1);
-            _participanteRepository.AdicionarParticipante(participante2);
-
             _leilaoService.CriarLeilao(leilao);
+            _leilaoService.AdicionarParticipante(leilao.Id, participante1);
+            _leilaoService.AdicionarParticipante(leilao.Id, participante2);
             _leilaoService.AbrirLeilao(leilao.Id);
             _leilaoService.AdicionarLance(leilao.Id, participante1, 150);
             _leilaoService.AdicionarLance(leilao.Id, participante2, 200);
@@ -470,19 +456,6 @@ namespace Leilao
             return status.HasValue
                 ? _leiloes.Where(l => l.Status == status).ToList()
                 : _leiloes.ToList();
-        }
-    }
-    public class InMemoryParticipanteRepository : IParticipanteRepository
-    {
-        private readonly List<Participante> _participantes = new();
-        public Participante ObterParticipantePorId(Guid participanteId)
-        {
-            return _participantes.FirstOrDefault(p => p.Id == participanteId);
-        }
-
-        public void AdicionarParticipante(Participante participante)
-        {
-            _participantes.Add(participante);
         }
     }
 }

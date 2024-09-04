@@ -14,6 +14,7 @@ namespace Leilao
         public DateTime DataExpiracao { get; private set; }
         public EstadoLeilao Status { get; private set; }
         public List<Lance> Lances { get; private set; } = new List<Lance>();
+        public List<Participante> Participantes { get; private set; } = new List<Participante>();
         public decimal LanceMinimo { get; private set; }
 
         public Leilao(string titulo, DateTime dataExpiracao, decimal lanceMinimo)
@@ -65,6 +66,10 @@ namespace Leilao
                 throw new InvalidOperationException("O mesmo participante não pode dar dois lances consecutivos.");
 
             Lances.Add(new Lance(participante, valor));
+        }
+        public void AdicionarParticipante(Participante participante)
+        {
+            Participantes.Add(participante);
         }
 
         public Lance ObterMaiorLance() => Lances.OrderByDescending(l => l.Valor).FirstOrDefault();

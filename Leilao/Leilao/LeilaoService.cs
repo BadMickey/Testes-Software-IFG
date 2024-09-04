@@ -10,13 +10,11 @@ namespace Leilao
     {
         private readonly ILeilaoRepository _leilaoRepository;
         private readonly IEmailService _emailService;
-        private readonly IParticipanteRepository _participanteRepository;
 
-        public LeilaoService(ILeilaoRepository leilaoRepository, IEmailService emailService, IParticipanteRepository participanteRepository)
+        public LeilaoService(ILeilaoRepository leilaoRepository, IEmailService emailService)
         {
             _leilaoRepository = leilaoRepository;
             _emailService = emailService;
-            _participanteRepository = participanteRepository;
         }
 
         public void CriarLeilao(Leilao leilao) => _leilaoRepository.AdicionarLeilao(leilao);
@@ -60,13 +58,20 @@ namespace Leilao
             var leilao = _leilaoRepository.ObterLeilaoPorId(leilaoId);
             if (leilao == null) throw new ArgumentException("Leilão não encontrado.");
 
-            var participanteCadastrado = _participanteRepository.ObterParticipantePorId(participante.Id);
+            var participanteCadastrado = leilao.Participantes.FirstOrDefault(p => p.Id == participante.Id);
 
             if (participanteCadastrado == null)
             {
                 throw new InvalidOperationException("Participante não cadastrado.");
             }
             leilao.AdicionarLance(participante, valor);
+            _leilaoRepository.AtualizarLeilao(leilao);
+        }
+
+        public void AdicionarParticipante(Guid leilaoid, Participante participante)
+        {
+            var leilao = _leilaoRepository.ObterLeilaoPorId(leilaoid);
+            leilao.AdicionarParticipante(participante);
             _leilaoRepository.AtualizarLeilao(leilao);
         }
 
