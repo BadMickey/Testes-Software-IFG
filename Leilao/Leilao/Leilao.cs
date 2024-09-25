@@ -12,16 +12,20 @@ namespace Leilao
     {
         [Key]
         public Guid Id { get; private set; }
+
         [Required]
         [MaxLength(100)]
         public string Titulo { get; private set; }
         public DateTime? DataInicio { get; private set; }
+
         [Required]
         public DateTime DataExpiracao { get; private set; }
+
         [Required]
         public EstadoLeilao Status { get; private set; }
         public List<Lance> Lances { get; private set; } = new List<Lance>();
         public List<Participante> Participantes { get; private set; } = new List<Participante>();
+
         [Column(TypeName = "decimal(18,2)")]
         public decimal LanceMinimo { get; private set; }
 
@@ -84,6 +88,6 @@ namespace Leilao
         public Lance ObterMenorLance() => Lances.OrderBy(l => l.Valor).FirstOrDefault();
         public List<Lance> ObterLancesOrdenados() => Lances.OrderBy(l => l.Valor).ToList();
 
-        public Leilao(){}
+        private Leilao(){}
     }
 }

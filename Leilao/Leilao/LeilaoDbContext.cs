@@ -21,7 +21,7 @@ namespace Leilao
 
             modelBuilder.Entity<Leilao>()
                 .HasMany(l => l.Participantes)
-                .WithMany(p => p.Lances)
+                .WithMany(p => p.Leiloes)
                 .UsingEntity<Dictionary<string, object>>(
                     "LeilaoParticipante",
                     j => j.HasOne<Participante>().WithMany().HasForeignKey("ParticipanteId"),
