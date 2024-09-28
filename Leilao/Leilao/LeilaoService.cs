@@ -17,27 +17,27 @@ namespace Leilao
             _emailService = emailService;
         }
 
-        public void CriarLeilao(Leilao leilao) => _leilaoRepository.AdicionarLeilao(leilao);
+        public async Task CriarLeilao(Leilao leilao) => await _leilaoRepository.AdicionarLeilao(leilao);
 
-        public void AbrirLeilao(Guid id)
+        public async Task AbrirLeilao(Guid id)
         {
-            var leilao = _leilaoRepository.ObterLeilaoPorId(id);
+            var leilao = await _leilaoRepository.ObterLeilaoPorIdAsync(id);
             leilao.AbrirLeilao();
-            _leilaoRepository.AtualizarLeilao(leilao);
+            await _leilaoRepository.AtualizarLeilao(leilao);
         }
 
-        public void ExpirarLeilao(Guid id)
+        public async Task ExpirarLeilao(Guid id)
         {
-            var leilao = _leilaoRepository.ObterLeilaoPorId(id);
+            var leilao = await _leilaoRepository.ObterLeilaoPorIdAsync(id);
             leilao.ExpirarLeilao();
-            _leilaoRepository.AtualizarLeilao(leilao);
+            await _leilaoRepository.AtualizarLeilao(leilao);
         }
 
-        public Boolean? FinalizarLeilao(Guid id)
+        public async Task <Boolean?> FinalizarLeilao(Guid id)
         {
-            var leilao = _leilaoRepository.ObterLeilaoPorId(id);
+            var leilao = await _leilaoRepository.ObterLeilaoPorIdAsync(id);
             leilao.FinalizarLeilao();
-            _leilaoRepository.AtualizarLeilao(leilao);
+            await _leilaoRepository.AtualizarLeilao(leilao);
 
             var vencedor = leilao.ObterMaiorLance()?.Participante;
             // Simulação de envio de e-mail
@@ -53,9 +53,9 @@ namespace Leilao
             }
         }
 
-        public void AdicionarLance(Guid leilaoId, Participante participante, decimal valor)
+        public async Task AdicionarLanceAsync(Guid leilaoId, Participante participante, decimal valor)
         {
-            var leilao = _leilaoRepository.ObterLeilaoPorId(leilaoId);
+            var leilao = await _leilaoRepository.ObterLeilaoPorIdAsync(leilaoId);
             if (leilao == null) throw new ArgumentException("Leilão não encontrado.");
 
             var participanteCadastrado = leilao.Participantes.FirstOrDefault(p => p.Id == participante.Id);
@@ -65,18 +65,32 @@ namespace Leilao
                 throw new InvalidOperationException("Participante não cadastrado.");
             }
             leilao.AdicionarLance(participante, valor);
-            _leilaoRepository.AtualizarLeilao(leilao);
+            await _leilaoRepository.AtualizarLeilao(leilao);
         }
 
-        public void AdicionarParticipante(Guid leilaoid, Participante participante)
+        public async Task AdicionarParticipanteAsync(Guid leilaoid, Participante participante)
         {
-            var leilao = _leilaoRepository.ObterLeilaoPorId(leilaoid);
+            var leilao = await _leilaoRepository.ObterLeilaoPorIdAsync(leilaoid);
             leilao.AdicionarParticipante(participante);
-            _leilaoRepository.AtualizarLeilao(leilao);
+            await _leilaoRepository.AtualizarLeilao(leilao);
         }
 
-        public List<Lance> ObterLances(Guid leilaoId) => _leilaoRepository.ObterLeilaoPorId(leilaoId).ObterLancesOrdenados();
-        public Lance ObterMaiorLance(Guid leilaoId) => _leilaoRepository.ObterLeilaoPorId(leilaoId).ObterMaiorLance();
-        public Lance ObterMenorLance(Guid leilaoId) => _leilaoRepository.ObterLeilaoPorId(leilaoId).ObterMenorLance();
+        public async Task<List<Lance>> ObterLancesAsync(Guid leilaoId)
+        {
+            var leilao = await _leilaoRepository.ObterLeilaoPorIdAsync(leilaoId); 
+            return leilao.ObterLancesOrdenados();
+        }
+
+        public async Task<Lance> ObterMaiorLanceAsync(Guid leilaoId)
+        {
+            var leilao = await _leilaoRepository.ObterLeilaoPorIdAsync(leilaoId);
+            return leilao.ObterMaiorLance();
+        }
+
+        public async Task<Lance> ObterMenorLanceAsync(Guid leilaoId)
+        {
+            var leilao = await _leilaoRepository.ObterLeilaoPorIdAsync(leilaoId);
+            return leilao.ObterMenorLance();
+        }
     }
 }

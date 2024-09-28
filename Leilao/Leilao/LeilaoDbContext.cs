@@ -9,6 +9,7 @@ namespace Leilao
         public DbSet<Lance> Lances { get; set; }
 
         public LeilaoDbContext(DbContextOptions<LeilaoDbContext> options) : base(options) { }
+        public LeilaoDbContext() { }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -32,6 +33,22 @@ namespace Leilao
                 .HasMany(p => p.Lances)
                 .WithOne(l => l.Participante)
                 .HasForeignKey(l => l.ParticipanteId);
+
+            // Configuração das colunas DateTime
+            modelBuilder.Entity<Leilao>(entity =>
+            {
+                entity.Property(e => e.DataInicio)
+                      .HasColumnType("timestamp without time zone");
+
+                entity.Property(e => e.DataExpiracao)
+                      .HasColumnType("timestamp without time zone");
+            });
+
+            modelBuilder.Entity<Lance>(entity =>
+            {
+                entity.Property(e => e.Data)
+                      .HasColumnType("timestamp without time zone");
+            });
         }
     }
 }

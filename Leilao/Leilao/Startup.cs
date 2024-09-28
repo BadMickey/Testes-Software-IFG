@@ -2,6 +2,9 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Hosting;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Hosting;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -13,7 +16,11 @@ namespace Leilao
     {
         public IConfiguration Configuration { get;}
 
-        public void ConfigurationService(IServiceCollection services)
+        public Startup(IConfiguration configuration){
+            Configuration = configuration;
+        }
+
+        public void ConfigureServices(IServiceCollection services)
         {
             //Configurar o DbContext para usar o PostgreSQL
             services.AddDbContext<LeilaoDbContext>(options =>
@@ -34,8 +41,23 @@ namespace Leilao
             {
                 app.UseDeveloperExceptionPage();
             }
+            else
+            {
+                app.UseExceptionHandler("/Home/Error");
+                app.UseHsts();
+            }
+
+            app.UseHttpsRedirection();
+            app.UseStaticFiles();
+
             app.UseRouting();
-            app.UseEndpoints(endpoints => { endpoints.MapControllers(); });
+
+            app.UseAuthorization();
+
+            app.UseEndpoints(endpoints =>
+            {
+                endpoints.MapControllers();
+            });
         }
     }
 }

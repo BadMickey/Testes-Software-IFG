@@ -8,9 +8,9 @@ namespace Leilao
 {
     public interface ILeilaoRepository
     {
-        void AdicionarLeilao(Leilao leilao);
-        Leilao ObterLeilaoPorId(Guid id);
-        void AtualizarLeilao(Leilao leilao);
-        List<Leilao> ListarLeiloes(EstadoLeilao? status);
+        Task AdicionarLeilao(Leilao leilao);
+        Task <Leilao> ObterLeilaoPorIdAsync(Guid id);
+        Task AtualizarLeilao(Leilao leilao);
+        Task <List<Leilao>> ListarLeiloes(EstadoLeilao? status);
     }
 }
