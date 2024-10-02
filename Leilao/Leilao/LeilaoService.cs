@@ -34,7 +34,7 @@ namespace Leilao
             await _leilaoRepository.AtualizarLeilao(leilao);
         }
 
-        public async Task <Boolean?> FinalizarLeilao(Guid id)
+        public async Task<Boolean?> FinalizarLeilao(Guid id)
         {
             var leilao = await _leilaoRepository.ObterLeilaoPorIdAsync(id);
             leilao.FinalizarLeilao();
@@ -78,29 +78,41 @@ namespace Leilao
             if (leilao.Lances.Any() && leilao.Lances.Last().Participante.Id == participante.Id)
                 throw new InvalidOperationException("O mesmo participante não pode dar dois lances consecutivos.");
 
-            //leilao.AdicionarLance(participante, valor, leilao.Id);
             var lance = new Lance(participante, valor, leilaoId);
 
             await _leilaoRepository.AdicionarLance(lance);
         }
+
         public async Task AdicionarParticipanteAsync(Guid leilaoid, Participante participante)
         {
             var leilao = await _leilaoRepository.ObterLeilaoPorIdAsync(leilaoid);
             if (leilao == null) throw new ArgumentException("Leilão não encontrado.");
-            
+
             await _leilaoRepository.AdicionarParticipante(participante);
             leilao.AdicionarParticipante(participante);
             await _leilaoRepository.AtualizarLeilao(leilao);
         }
+
+        public async Task EditarParticipanteAsync(Participante participantealterado)
+        {
+            await _leilaoRepository.AtualizarParticipante(participantealterado);
+        }
+
         public async Task<Participante> ObterParticipanteAsync(Guid participanteid)
         {
             var participante = await _leilaoRepository.ObterParticipantePorIdAsync(participanteid);
             return participante;
         }
 
+        public async Task<List<Participante>> ObterListaParticipantesAsync()
+        {
+            List<Participante> participantes = await _leilaoRepository.ObterTodosParticipantesAsync();
+            return participantes;
+        }
+
         public async Task<List<Lance>> ObterLancesAsync(Guid leilaoId)
         {
-            var leilao = await _leilaoRepository.ObterLeilaoPorIdAsync(leilaoId); 
+            var leilao = await _leilaoRepository.ObterLeilaoPorIdAsync(leilaoId);
             return leilao.ObterLancesOrdenados();
         }
 

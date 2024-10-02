@@ -52,7 +52,6 @@ namespace Leilao
             _dbContext.Dispose();
             _serviceProvider.Dispose();
         }
-
         [Fact]
         public async Task Deve_Listar_Leilao_Com_Status_Aberto()
         {
@@ -72,7 +71,6 @@ namespace Leilao
             Assert.Contains(leilao3, leiloesAbertos);
             Assert.Contains(leilao4, leiloesAbertos);//Testando se vai retornar a lista de leilões abertos
         }
-
         [Fact]
         public async Task Deve_Listar_Leilao_Com_Status_Finalizado()
         {
@@ -94,7 +92,6 @@ namespace Leilao
             Assert.Contains(leilao3, leiloesFinalizados);
             Assert.Contains(leilao4, leiloesFinalizados);//Testando se vai retornar a lista de leilões Finalizados
         }
-
         [Fact]
         public async Task Deve_Listar_Leilao_Com_Status_Expirado()
         {
@@ -116,7 +113,6 @@ namespace Leilao
             Assert.Contains(leilao3, leiloesExpirados);
             Assert.Contains(leilao4, leiloesExpirados);//Testando se vai retornar a lista de leilões Expirados
         }
-
         [Fact]
         public async Task Deve_Listar_Leilao_Com_Status_Inativo()
         {
@@ -375,7 +371,6 @@ namespace Leilao
                 Times.Once
             );
         }
-
         [Fact]
         public async Task Deve_Avisar_Sem_Ganhador()
         {
@@ -388,7 +383,6 @@ namespace Leilao
 
             Assert.False(enviou);
         }
-
         [Fact]
         public async Task Nao_Deve_Adicionar_Lance_Participante_Nao_Cadastrado()
         {
@@ -401,7 +395,6 @@ namespace Leilao
             await Assert.ThrowsAsync<InvalidOperationException>(() =>
                 _leilaoService.AdicionarLanceAsync(leilao.Id, participante, 150));
         }
-
         [Fact]
         public async Task Deve_Adicionar_Participante_Ao_Leilao()
         {
@@ -416,6 +409,56 @@ namespace Leilao
         }
 
         [Fact]
+        public async Task Deve_Editar_Participante()
+        {
+            var leilao = new Leilao("Leilão Teste", DateTime.Now.AddDays(5), 100);
+            await _leilaoService.CriarLeilao(leilao);
+
+            var participante = new Participante("Participante Teste", "teste@example.com");
+            await _leilaoService.AdicionarParticipanteAsync(leilao.Id, participante);
+            var participanteAntigo = await _leilaoService.ObterParticipanteAsync(participante.Id);
+            var participanteAlterado = participanteAntigo;
+
+            participanteAlterado.Email = "emailmudado@example.com";
+            participanteAlterado.Nome = "Novo nome";
+
+            await _leilaoService.EditarParticipanteAsync(participanteAlterado);
+            var participanteAtualizado = await _leilaoService.ObterParticipanteAsync(participante.Id);
+
+
+            Assert.True(participanteAlterado == participanteAtualizado);
+        }
+
+        [Fact]
+        public async Task Deve_Obter_Participante()
+        {
+            var leilao = new Leilao("Leilão Teste", DateTime.Now.AddDays(5), 100);
+            await _leilaoService.CriarLeilao(leilao);
+
+            var participante = new Participante("Participante Teste", "teste@example.com");
+            await _leilaoService.AdicionarParticipanteAsync(leilao.Id, participante);
+            var participanteObtido = await _leilaoService.ObterParticipanteAsync(participante.Id);
+
+            Assert.NotNull(participanteObtido);
+        }
+
+        [Fact]
+        public async Task Deve_Retornar_Lista_Participantes()
+        {
+            var leilao = new Leilao("Leilão Teste", DateTime.Now.AddDays(5), 100);
+            await _leilaoService.CriarLeilao(leilao);
+
+            var participante = new Participante("Participante Teste", "teste@example.com");
+            var participante2 = new Participante("Participante Teste2", "teste@example.com");
+            var participante3 = new Participante("Participante Teste3", "teste@example.com");
+            await _leilaoService.AdicionarParticipanteAsync(leilao.Id, participante);
+            await _leilaoService.AdicionarParticipanteAsync(leilao.Id, participante2);
+            await _leilaoService.AdicionarParticipanteAsync(leilao.Id, participante3);
+
+            List<Participante> participantes = await _leilaoService.ObterListaParticipantesAsync();
+            Assert.Equal(3, participantes.Count);
+        }
+        [Fact]
         public async Task Deve_Adicionar_Lance_Participante_Cadastrado()
         {
             var leilao = new Leilao("Leilão Teste", DateTime.Now.AddDays(5), 100);
@@ -425,7 +468,7 @@ namespace Leilao
             await _leilaoService.AdicionarParticipanteAsync(leilao.Id, participante);
             await _leilaoService.AbrirLeilao(leilao.Id);
             await _leilaoService.AdicionarLanceAsync(leilao.Id, participante, 150);
-     
+
             var lances = await _leilaoService.ObterLancesAsync(leilao.Id);
             Assert.Single(lances);// Testa se o participante efetuou o lance
             Assert.Equal(150, lances[0].Valor);

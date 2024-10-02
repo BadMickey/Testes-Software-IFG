@@ -77,9 +77,6 @@ namespace Leilao
             if (Lances.Any() && Lances.Last().Participante.Id == participante.Id)
                 throw new InvalidOperationException("O mesmo participante não pode dar dois lances consecutivos.");
 
-            //Lances.Add(new Lance(participante, valor, leilaoid));
-
-            //return Lances;
         }
         public void AdicionarParticipante(Participante participante)
         {

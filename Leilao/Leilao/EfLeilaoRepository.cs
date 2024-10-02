@@ -14,28 +14,43 @@ namespace Leilao
         {
             _dbContext = dbContext;
         }
-        public async Task<Participante> ObterParticipantePorIdAsync(Guid id)
-        {
-            return await _dbContext.Participantes.FirstOrDefaultAsync(p => p.Id == id);
-        }
+
         public async Task AdicionarLeilao(Leilao leilao)
         {
             await _dbContext.Leiloes.AddAsync(leilao);
             await _dbContext.SaveChangesAsync();
         }
+
         public async Task AdicionarLance(Lance lance)
         {
             await _dbContext.Lances.AddAsync(lance);
             await _dbContext.SaveChangesAsync();
         }
+
         public async Task AdicionarParticipante(Participante participante)
         {
             var participanteExistente = await _dbContext.Participantes.FindAsync(participante.Id);
-             if (participanteExistente == null)
+            if (participanteExistente == null)
             {
                 await _dbContext.Participantes.AddAsync(participante);
                 await _dbContext.SaveChangesAsync();
             }
+        }
+
+        public async Task<Participante> ObterParticipantePorIdAsync(Guid id)
+        {
+            return await _dbContext.Participantes.FirstOrDefaultAsync(p => p.Id == id);
+        }
+
+        public async Task<List<Participante>> ObterTodosParticipantesAsync()
+        {
+            return await _dbContext.Participantes.ToListAsync();
+        }
+
+        public async Task AtualizarParticipante(Participante participante)
+        {
+            _dbContext.Participantes.Update(participante);
+            await _dbContext.SaveChangesAsync();
         }
 
         public async Task<Leilao> ObterLeilaoPorIdAsync(Guid id)
@@ -48,7 +63,7 @@ namespace Leilao
 
         public async Task AtualizarLeilao(Leilao leilao)
         {
-  
+
             _dbContext.Leiloes.Update(leilao);
             await _dbContext.SaveChangesAsync();
         }
