@@ -44,13 +44,15 @@ namespace Leilao
         }
         public void Dispose()
         {
-            //_dbContext.Database.ExecuteSqlRaw("TRUNCATE TABLE \"Leiloes\" RESTART IDENTITY CASCADE;");
-            //_dbContext.Database.ExecuteSqlRaw("TRUNCATE TABLE \"Participantes\" RESTART IDENTITY CASCADE;");
-            _dbContext.Database.EnsureDeleted();
-            //_dbContext.Database.ExecuteSqlRaw("TRUNCATE TABLE \"Lances\" RESTART IDENTITY CASCADE;");
+            _dbContext.Database.ExecuteSqlRaw("TRUNCATE TABLE \"Leiloes\" RESTART IDENTITY CASCADE;");
+            _dbContext.Database.ExecuteSqlRaw("TRUNCATE TABLE \"Participantes\" RESTART IDENTITY CASCADE;");
+            _dbContext.Database.ExecuteSqlRaw("TRUNCATE TABLE \"LeilaoParticipante\" RESTART IDENTITY CASCADE;");
+            //_dbContext.Database.EnsureDeleted();
+            _dbContext.Database.ExecuteSqlRaw("TRUNCATE TABLE \"Lances\" RESTART IDENTITY CASCADE;");
             _dbContext.Dispose();
             _serviceProvider.Dispose();
         }
+
         [Fact]
         public async Task Deve_Listar_Leilao_Com_Status_Aberto()
         {
@@ -70,6 +72,7 @@ namespace Leilao
             Assert.Contains(leilao3, leiloesAbertos);
             Assert.Contains(leilao4, leiloesAbertos);//Testando se vai retornar a lista de leilões abertos
         }
+
         [Fact]
         public async Task Deve_Listar_Leilao_Com_Status_Finalizado()
         {
@@ -91,6 +94,7 @@ namespace Leilao
             Assert.Contains(leilao3, leiloesFinalizados);
             Assert.Contains(leilao4, leiloesFinalizados);//Testando se vai retornar a lista de leilões Finalizados
         }
+
         [Fact]
         public async Task Deve_Listar_Leilao_Com_Status_Expirado()
         {
@@ -112,6 +116,7 @@ namespace Leilao
             Assert.Contains(leilao3, leiloesExpirados);
             Assert.Contains(leilao4, leiloesExpirados);//Testando se vai retornar a lista de leilões Expirados
         }
+
         [Fact]
         public async Task Deve_Listar_Leilao_Com_Status_Inativo()
         {
@@ -370,6 +375,7 @@ namespace Leilao
                 Times.Once
             );
         }
+
         [Fact]
         public async Task Deve_Avisar_Sem_Ganhador()
         {
@@ -382,6 +388,7 @@ namespace Leilao
 
             Assert.False(enviou);
         }
+
         [Fact]
         public async Task Nao_Deve_Adicionar_Lance_Participante_Nao_Cadastrado()
         {
@@ -394,6 +401,7 @@ namespace Leilao
             await Assert.ThrowsAsync<InvalidOperationException>(() =>
                 _leilaoService.AdicionarLanceAsync(leilao.Id, participante, 150));
         }
+
         [Fact]
         public async Task Deve_Adicionar_Participante_Ao_Leilao()
         {
@@ -406,6 +414,7 @@ namespace Leilao
             var leilaoAtualizado = await _leilaoRepository.ObterLeilaoPorIdAsync(leilao.Id);
             Assert.Contains(leilaoAtualizado.Participantes, p => p.Id == participante.Id);
         }
+
         [Fact]
         public async Task Deve_Adicionar_Lance_Participante_Cadastrado()
         {
@@ -416,7 +425,7 @@ namespace Leilao
             await _leilaoService.AdicionarParticipanteAsync(leilao.Id, participante);
             await _leilaoService.AbrirLeilao(leilao.Id);
             await _leilaoService.AdicionarLanceAsync(leilao.Id, participante, 150);
-
+     
             var lances = await _leilaoService.ObterLancesAsync(leilao.Id);
             Assert.Single(lances);// Testa se o participante efetuou o lance
             Assert.Equal(150, lances[0].Valor);
@@ -479,11 +488,9 @@ namespace Leilao
             await _leilaoService.AdicionarLanceAsync(leilao.Id, participante1, 150);
             await _leilaoService.AdicionarLanceAsync(leilao.Id, participante2, 200);
 
-            var menorLance = await _leilaoService.ObterMaiorLanceAsync(leilao.Id);
+            var menorLance = await _leilaoService.ObterMenorLanceAsync(leilao.Id);
 
             Assert.Equal(150, menorLance.Valor);//Teste para retornar o menor lance
         }
     }
-
-    // Repositório em memória para facilitar os testes
 }

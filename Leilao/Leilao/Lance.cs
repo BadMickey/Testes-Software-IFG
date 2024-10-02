@@ -26,11 +26,12 @@ namespace Leilao
         public decimal Valor { get; private set; }
         public DateTime Data { get; private set; }
 
-        public Lance(Participante participante, decimal valor)
+        public Lance(Participante participante, decimal valor, Guid leilaoid)
         {
             Id = Guid.NewGuid();
             Participante = participante;
             ParticipanteId = participante.Id;
+            LeilaoId = leilaoid;
             Valor = valor;
             Data = DateTime.Now;
         }

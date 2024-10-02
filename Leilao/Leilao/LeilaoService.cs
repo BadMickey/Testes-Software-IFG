@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.EntityFrameworkCore;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -64,15 +65,37 @@ namespace Leilao
             {
                 throw new InvalidOperationException("Participante não cadastrado.");
             }
-            leilao.AdicionarLance(participante, valor);
-            await _leilaoRepository.AtualizarLeilao(leilao);
-        }
 
+            if (leilao.Status != EstadoLeilao.ABERTO)
+                throw new InvalidOperationException("O leilão não está aberto para receber lances.");
+
+            if (valor < leilao.LanceMinimo)
+                throw new InvalidOperationException("O valor do lance é inferior ao lance mínimo permitido.");
+
+            if (leilao.Lances.Any() && valor <= leilao.Lances.Max(l => l.Valor))
+                throw new InvalidOperationException("O valor do lance deve ser superior ao maior lance atual.");
+
+            if (leilao.Lances.Any() && leilao.Lances.Last().Participante.Id == participante.Id)
+                throw new InvalidOperationException("O mesmo participante não pode dar dois lances consecutivos.");
+
+            //leilao.AdicionarLance(participante, valor, leilao.Id);
+            var lance = new Lance(participante, valor, leilaoId);
+
+            await _leilaoRepository.AdicionarLance(lance);
+        }
         public async Task AdicionarParticipanteAsync(Guid leilaoid, Participante participante)
         {
             var leilao = await _leilaoRepository.ObterLeilaoPorIdAsync(leilaoid);
+            if (leilao == null) throw new ArgumentException("Leilão não encontrado.");
+            
+            await _leilaoRepository.AdicionarParticipante(participante);
             leilao.AdicionarParticipante(participante);
             await _leilaoRepository.AtualizarLeilao(leilao);
+        }
+        public async Task<Participante> ObterParticipanteAsync(Guid participanteid)
+        {
+            var participante = await _leilaoRepository.ObterParticipantePorIdAsync(participanteid);
+            return participante;
         }
 
         public async Task<List<Lance>> ObterLancesAsync(Guid leilaoId)
