@@ -21,6 +21,17 @@ namespace Leilao
             await _dbContext.SaveChangesAsync();
         }
 
+        public LeilaoDbContext Get_dbContext()
+        {
+            return _dbContext;
+        }
+
+        public async Task<Lance> ObterLance(Guid participanteId, int valorDoLance)
+        {
+            var lanceVerificado = _dbContext.Lances.FirstOrDefault(l => l.Valor == valorDoLance && l.Participante.Id == participanteId);
+            return lanceVerificado;
+        }
+
         public async Task AdicionarLance(Lance lance)
         {
             await _dbContext.Lances.AddAsync(lance);

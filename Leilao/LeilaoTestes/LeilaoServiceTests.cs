@@ -50,6 +50,7 @@ namespace Leilao
             //_dbContext.Database.EnsureDeleted();
             _dbContext.Database.ExecuteSqlRaw("TRUNCATE TABLE \"Lances\" RESTART IDENTITY CASCADE;");
             _dbContext.Dispose();
+
             _serviceProvider.Dispose();
         }
         [Fact]
@@ -458,6 +459,7 @@ namespace Leilao
             List<Participante> participantes = await _leilaoService.ObterListaParticipantesAsync();
             Assert.Equal(3, participantes.Count);
         }
+
         [Fact]
         public async Task Deve_Adicionar_Lance_Participante_Cadastrado()
         {
@@ -472,6 +474,26 @@ namespace Leilao
             var lances = await _leilaoService.ObterLancesAsync(leilao.Id);
             Assert.Single(lances);// Testa se o participante efetuou o lance
             Assert.Equal(150, lances[0].Valor);
+        }
+
+        [Fact]
+        public async Task Deve_Retornar_Lance()
+        {
+            var leilao = new Leilao("Leilão Teste", DateTime.Now.AddDays(5), 100);
+            var participante = new Participante("Maria", "maria@email.com");
+
+            await _leilaoService.CriarLeilao(leilao);
+            await _leilaoService.AdicionarParticipanteAsync(leilao.Id, participante);
+            await _leilaoService.AbrirLeilao(leilao.Id);
+
+            var valorDoLance = 150;
+            await _leilaoService.AdicionarLanceAsync(leilao.Id, participante, valorDoLance);
+
+            var leilaoObtido = await _leilaoRepository.ObterLeilaoPorIdAsync(leilao.Id);
+            var lance = await _leilaoService.ObterLanceporIdAsync(participante.Id, valorDoLance);
+
+
+            Assert.True(lance.ParticipanteId == participante.Id && lance.Valor == valorDoLance);
         }
 
         [Fact]

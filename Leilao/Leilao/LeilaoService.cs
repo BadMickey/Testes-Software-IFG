@@ -54,6 +54,33 @@ namespace Leilao
             }
         }
 
+        public async Task AdicionarParticipanteAsync(Guid leilaoid, Participante participante)
+        {
+            var leilao = await _leilaoRepository.ObterLeilaoPorIdAsync(leilaoid);
+            if (leilao == null) throw new ArgumentException("Leilão não encontrado.");
+
+            await _leilaoRepository.AdicionarParticipante(participante);
+            leilao.AdicionarParticipante(participante);
+            await _leilaoRepository.AtualizarLeilao(leilao);
+        }
+
+        public async Task EditarParticipanteAsync(Participante participantealterado)
+        {
+            await _leilaoRepository.AtualizarParticipante(participantealterado);
+        }
+
+        public async Task<Participante> ObterParticipanteAsync(Guid participanteid)
+        {
+            var participante = await _leilaoRepository.ObterParticipantePorIdAsync(participanteid);
+            return participante;
+        }
+
+        public async Task<List<Participante>> ObterListaParticipantesAsync()
+        {
+            List<Participante> participantes = await _leilaoRepository.ObterTodosParticipantesAsync();
+            return participantes;
+        }
+
         public async Task AdicionarLanceAsync(Guid leilaoId, Participante participante, decimal valor)
         {
             var leilao = await _leilaoRepository.ObterLeilaoPorIdAsync(leilaoId);
@@ -83,31 +110,9 @@ namespace Leilao
             await _leilaoRepository.AdicionarLance(lance);
         }
 
-        public async Task AdicionarParticipanteAsync(Guid leilaoid, Participante participante)
+        public async Task<Lance> ObterLanceporIdAsync(Guid participanteId, int valorDoLance)
         {
-            var leilao = await _leilaoRepository.ObterLeilaoPorIdAsync(leilaoid);
-            if (leilao == null) throw new ArgumentException("Leilão não encontrado.");
-
-            await _leilaoRepository.AdicionarParticipante(participante);
-            leilao.AdicionarParticipante(participante);
-            await _leilaoRepository.AtualizarLeilao(leilao);
-        }
-
-        public async Task EditarParticipanteAsync(Participante participantealterado)
-        {
-            await _leilaoRepository.AtualizarParticipante(participantealterado);
-        }
-
-        public async Task<Participante> ObterParticipanteAsync(Guid participanteid)
-        {
-            var participante = await _leilaoRepository.ObterParticipantePorIdAsync(participanteid);
-            return participante;
-        }
-
-        public async Task<List<Participante>> ObterListaParticipantesAsync()
-        {
-            List<Participante> participantes = await _leilaoRepository.ObterTodosParticipantesAsync();
-            return participantes;
+            return await _leilaoRepository.ObterLance(participanteId, valorDoLance);
         }
 
         public async Task<List<Lance>> ObterLancesAsync(Guid leilaoId)
