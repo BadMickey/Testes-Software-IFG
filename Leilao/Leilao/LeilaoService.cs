@@ -104,12 +104,19 @@ namespace Leilao
 
         public async Task EditarParticipanteAsync(Participante participantealterado)
         {
+            var participanteObtido = await _leilaoRepository.ObterParticipantePorIdAsync(participantealterado.Id);
+
+            if (participanteObtido == null) throw new InvalidOperationException("Participante não existe");
+
             await _leilaoRepository.AtualizarParticipante(participantealterado);
         }
 
         public async Task<Participante> ObterParticipanteAsync(Guid participanteid)
         {
             var participante = await _leilaoRepository.ObterParticipantePorIdAsync(participanteid);
+
+            if (participante == null) throw new InvalidOperationException("Participante não existe");
+
             return participante;
         }
 

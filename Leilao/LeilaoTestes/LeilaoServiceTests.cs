@@ -511,6 +511,26 @@ namespace Leilao
         }
 
         [Fact]
+        public async Task Nao_Deve_Editar_Participante()
+        {
+            var leilao = new Leilao("Leilão Teste", DateTime.Now.AddDays(5), 100);
+            var participante = new Participante("Participante Teste", "teste@example.com");
+            var participante2 = new Participante("Participante Teste", "teste@example.com");
+
+            await _leilaoService.CriarLeilao(leilao);
+            await _leilaoService.AdicionarParticipanteAsync(leilao.Id, participante);
+
+            var participanteAntigo = await _leilaoService.ObterParticipanteAsync(participante.Id);
+            var participanteAlterado = participante2;
+
+            participanteAlterado.Email = "emailmudado@example.com";
+            participanteAlterado.Nome = "Novo nome";
+
+            await Assert.ThrowsAsync<InvalidOperationException>(() =>
+                _leilaoService.EditarParticipanteAsync(participanteAlterado));
+        }
+
+        [Fact]
         public async Task Deve_Editar_Participante()
         {
             var leilao = new Leilao("Leilão Teste", DateTime.Now.AddDays(5), 100);
@@ -530,6 +550,21 @@ namespace Leilao
 
 
             Assert.True(participanteAlterado == participanteAtualizado);
+        }
+
+        [Fact]
+        public async Task Nao_Deve_Obter_Participante()
+        {
+            var leilao = new Leilao("Leilão Teste", DateTime.Now.AddDays(5), 100);
+            var participante = new Participante("Participante Teste", "teste@example.com");
+            var participante2 = new Participante("Participante Teste", "teste@example.com");
+
+            await _leilaoService.CriarLeilao(leilao);
+            await _leilaoService.AdicionarParticipanteAsync(leilao.Id, participante);
+
+
+            await Assert.ThrowsAsync<InvalidOperationException>(() =>
+                _leilaoService.ObterParticipanteAsync(participante2.Id));
         }
 
         [Fact]
