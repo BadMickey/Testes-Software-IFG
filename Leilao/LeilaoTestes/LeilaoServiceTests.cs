@@ -53,6 +53,30 @@ namespace Leilao
 
             _serviceProvider.Dispose();
         }
+
+        [Fact]
+        public async Task Deve_Listar_Todos_Leiloes()
+        {
+            var leilao = new Leilao("Leilão Teste", DateTime.Now.AddDays(5), 100);
+            var leilao2 = new Leilao("Leilão Teste 2", DateTime.Now.AddDays(5), 100);
+            var leilao3 = new Leilao("Leilão Teste 3", DateTime.Now.AddDays(5), 100);
+            var leilao4 = new Leilao("Leilão Teste 4", DateTime.Now.AddDays(5), 100);
+
+            await _leilaoService.CriarLeilao(leilao);
+            await _leilaoService.CriarLeilao(leilao2);
+            await _leilaoService.CriarLeilao(leilao3);
+            await _leilaoService.CriarLeilao(leilao4);
+            await _leilaoService.AbrirLeilao(leilao3.Id);
+            await _leilaoService.AbrirLeilao(leilao4.Id);
+
+            var leiloesAbertos = await _leilaoService.ListarTodosLeiloes();
+            Assert.Equal(4, leiloesAbertos.Count);
+            Assert.Contains(leilao, leiloesAbertos);
+            Assert.Contains(leilao2, leiloesAbertos);
+            Assert.Contains(leilao3, leiloesAbertos);
+            Assert.Contains(leilao4, leiloesAbertos);//Testando se vai retornar a lista de leilões abertos
+        }
+
         [Fact]
         public async Task Deve_Listar_Leilao_Com_Status_Aberto()
         {
@@ -60,6 +84,7 @@ namespace Leilao
             var leilao2 = new Leilao("Leilão Teste 2", DateTime.Now.AddDays(5), 100);
             var leilao3 = new Leilao("Leilão Teste 3", DateTime.Now.AddDays(5), 100);
             var leilao4 = new Leilao("Leilão Teste 4", DateTime.Now.AddDays(5), 100);
+
             await _leilaoService.CriarLeilao(leilao);
             await _leilaoService.CriarLeilao(leilao2);
             await _leilaoService.CriarLeilao(leilao3);
@@ -72,6 +97,7 @@ namespace Leilao
             Assert.Contains(leilao3, leiloesAbertos);
             Assert.Contains(leilao4, leiloesAbertos);//Testando se vai retornar a lista de leilões abertos
         }
+
         [Fact]
         public async Task Deve_Listar_Leilao_Com_Status_Finalizado()
         {
@@ -79,6 +105,7 @@ namespace Leilao
             var leilao2 = new Leilao("Leilão Teste 2", DateTime.Now.AddDays(5), 100);
             var leilao3 = new Leilao("Leilão Teste 3", DateTime.Now.AddDays(5), 100);
             var leilao4 = new Leilao("Leilão Teste 4", DateTime.Now.AddDays(5), 100);
+
             await _leilaoService.CriarLeilao(leilao);
             await _leilaoService.CriarLeilao(leilao2);
             await _leilaoService.CriarLeilao(leilao3);
@@ -93,6 +120,7 @@ namespace Leilao
             Assert.Contains(leilao3, leiloesFinalizados);
             Assert.Contains(leilao4, leiloesFinalizados);//Testando se vai retornar a lista de leilões Finalizados
         }
+
         [Fact]
         public async Task Deve_Listar_Leilao_Com_Status_Expirado()
         {
@@ -100,6 +128,7 @@ namespace Leilao
             var leilao2 = new Leilao("Leilão Teste 2", DateTime.Now.AddDays(5), 100);
             var leilao3 = new Leilao("Leilão Teste 3", DateTime.Now.AddSeconds(-1), 100);
             var leilao4 = new Leilao("Leilão Teste 4", DateTime.Now.AddSeconds(-1), 100);
+
             await _leilaoService.CriarLeilao(leilao);
             await _leilaoService.CriarLeilao(leilao2);
             await _leilaoService.CriarLeilao(leilao3);
@@ -114,12 +143,14 @@ namespace Leilao
             Assert.Contains(leilao3, leiloesExpirados);
             Assert.Contains(leilao4, leiloesExpirados);//Testando se vai retornar a lista de leilões Expirados
         }
+
         [Fact]
         public async Task Deve_Listar_Leilao_Com_Status_Inativo()
         {
             var leilao = new Leilao("Leilão Teste", DateTime.Now.AddDays(5), 100);
             var leilao2 = new Leilao("Leilão Teste 2", DateTime.Now.AddDays(5), 100);
             var leilao3 = new Leilao("Leilão Teste 3", DateTime.Now.AddDays(5), 100);
+
             await _leilaoService.CriarLeilao(leilao);
             await _leilaoService.CriarLeilao(leilao2);
             await _leilaoService.CriarLeilao(leilao3);
@@ -132,9 +163,76 @@ namespace Leilao
         }
 
         [Fact]
+        public async Task Deve_Obter_Leilao()
+        {
+            var leilao = new Leilao("Leilão Teste", DateTime.Now.AddDays(5), 100);
+            var leilao2 = new Leilao("Leilão Teste 2", DateTime.Now.AddDays(5), 100);
+            var leilao3 = new Leilao("Leilão Teste 3", DateTime.Now.AddSeconds(-1), 100);
+            var leilao4 = new Leilao("Leilão Teste 4", DateTime.Now.AddSeconds(-1), 100);
+
+            await _leilaoService.CriarLeilao(leilao);
+            await _leilaoService.CriarLeilao(leilao2);
+            await _leilaoService.CriarLeilao(leilao3);
+            await _leilaoService.CriarLeilao(leilao4);
+
+            var leilaoObtido = await _leilaoRepository.ObterLeilaoPorIdAsync(leilao.Id);
+
+            Assert.NotNull(leilaoObtido);
+        }
+
+        [Fact]
+        public async Task Nao_Deve_Editar_Leilao()
+        {
+            var leilao = new Leilao("Leilão Teste", DateTime.Now.AddDays(5), 100);
+            var leilao2 = new Leilao("Leilão Teste 2", DateTime.Now.AddDays(5), 100);
+            var leilao3 = new Leilao("Leilão Teste 3", DateTime.Now.AddDays(5), 100);
+
+            await _leilaoService.CriarLeilao(leilao);
+            await _leilaoService.CriarLeilao(leilao2);
+            await _leilaoService.CriarLeilao(leilao3);
+            await _leilaoService.AbrirLeilao(leilao3.Id);
+            await _leilaoService.AbrirLeilao(leilao2.Id);
+
+            //Editar leilao
+            leilao2.Titulo = "Leilao teste modificado";
+            leilao2.DataExpiracao = DateTime.Now.AddDays(2);
+            leilao2.LanceMinimo = 200;
+
+            await Assert.ThrowsAsync<InvalidOperationException>(() =>
+                _leilaoService.EditarLeilao(leilao2));
+        }
+
+        [Fact]
+        public async Task Deve_Editar_Leilao()
+        {
+            var leilao = new Leilao("Leilão Teste", DateTime.Now.AddDays(5), 100);
+            var leilao2 = new Leilao("Leilão Teste 2", DateTime.Now.AddDays(5), 100);
+            var leilao3 = new Leilao("Leilão Teste 3", DateTime.Now.AddDays(5), 100);
+
+            await _leilaoService.CriarLeilao(leilao);
+            await _leilaoService.CriarLeilao(leilao2);
+            await _leilaoService.CriarLeilao(leilao3);
+            await _leilaoService.AbrirLeilao(leilao3.Id);
+            await _leilaoService.AbrirLeilao(leilao2.Id);
+
+            //Editar leilao
+            leilao.Titulo = "Leilao teste modificado";
+            leilao.DataExpiracao = DateTime.Now.AddDays(2);
+            leilao.LanceMinimo = 200;
+            await _leilaoService.EditarLeilao(leilao);
+
+            var leilaoAlterado = await _leilaoRepository.ObterLeilaoPorIdAsync(leilao.Id);
+
+            Assert.Equal("Leilao teste modificado", leilaoAlterado.Titulo);
+            Assert.Equal(leilao.DataExpiracao, leilaoAlterado.DataExpiracao);
+            Assert.Equal(200, leilaoAlterado.LanceMinimo);
+        }
+
+        [Fact]
         public async Task Deve_Criar_Leilao_Com_Status_Inativo()
         {
             var leilao = new Leilao("Leilão Teste", DateTime.Now.AddDays(5), 100);
+
             await _leilaoService.CriarLeilao(leilao);
 
             var leilaoObtido = await _leilaoRepository.ObterLeilaoPorIdAsync(leilao.Id);
@@ -145,6 +243,7 @@ namespace Leilao
         public async Task Deve_Abrir_Leilao_Com_Status_Aberto()
         {
             var leilao = new Leilao("Leilão Teste", DateTime.Now.AddDays(5), 100);
+
             await _leilaoService.CriarLeilao(leilao);
             await _leilaoService.AbrirLeilao(leilao.Id);
 
@@ -156,6 +255,7 @@ namespace Leilao
         public async Task Deve_Avisar_Leilao_Ja_Aberto()
         {
             var leilao = new Leilao("Leilão Teste", DateTime.Now.AddDays(5), 100);
+
             await _leilaoService.CriarLeilao(leilao);
             await _leilaoService.AbrirLeilao(leilao.Id);
 
@@ -166,6 +266,7 @@ namespace Leilao
         public async Task Deve_Expirar_Leilao_Quando_Data_Expirada()
         {
             var leilao = new Leilao("Leilão Teste", DateTime.Now.AddSeconds(-1), 100); // Expirado
+
             await _leilaoService.CriarLeilao(leilao);
             await _leilaoService.ExpirarLeilao(leilao.Id);
 
@@ -177,6 +278,7 @@ namespace Leilao
         public async Task Nao_Deve_Expirar_Leilao_Sem_Acabar_Prazo()
         {
             var leilao = new Leilao("Leilão Teste", DateTime.Now.AddDays(5), 100);
+
             await _leilaoService.CriarLeilao(leilao);
             await _leilaoService.AbrirLeilao(leilao.Id);
 
@@ -189,10 +291,10 @@ namespace Leilao
         public async Task Deve_Finalizar_Leilao_Expirado()
         {
             var leilao = new Leilao("Leilão Teste", DateTime.Now.AddSeconds(-1), 100);
+
             await _leilaoService.CriarLeilao(leilao);
             await _leilaoService.AbrirLeilao(leilao.Id);
             await _leilaoService.ExpirarLeilao(leilao.Id);
-
             await _leilaoService.FinalizarLeilao(leilao.Id);
 
             var leilaoObtido = await _leilaoRepository.ObterLeilaoPorIdAsync(leilao.Id);
@@ -203,9 +305,9 @@ namespace Leilao
         public async Task Deve_Finalizar_Leilao_Aberto()
         {
             var leilao = new Leilao("Leilão Teste", DateTime.Now.AddDays(5), 100);
+
             await _leilaoService.CriarLeilao(leilao);
             await _leilaoService.AbrirLeilao(leilao.Id);
-
             await _leilaoService.FinalizarLeilao(leilao.Id);
 
             var leilaoObtido = await _leilaoRepository.ObterLeilaoPorIdAsync(leilao.Id);
@@ -216,6 +318,7 @@ namespace Leilao
         public async Task Não_Deve_Finalizar_Leilao_Inativo()
         {
             var leilao = new Leilao("Leilão Teste", DateTime.Now.AddDays(5), 100);
+
             await _leilaoService.CriarLeilao(leilao);
 
             var leilaoObtido = await _leilaoRepository.ObterLeilaoPorIdAsync(leilao.Id);
@@ -400,9 +503,9 @@ namespace Leilao
         public async Task Deve_Adicionar_Participante_Ao_Leilao()
         {
             var leilao = new Leilao("Leilão Teste", DateTime.Now.AddDays(5), 100);
-            await _leilaoService.CriarLeilao(leilao);
-
             var participante = new Participante("Participante Teste", "teste@example.com");
+
+            await _leilaoService.CriarLeilao(leilao);
             await _leilaoService.AdicionarParticipanteAsync(leilao.Id, participante);
 
             var leilaoAtualizado = await _leilaoRepository.ObterLeilaoPorIdAsync(leilao.Id);
@@ -413,10 +516,11 @@ namespace Leilao
         public async Task Deve_Editar_Participante()
         {
             var leilao = new Leilao("Leilão Teste", DateTime.Now.AddDays(5), 100);
-            await _leilaoService.CriarLeilao(leilao);
-
             var participante = new Participante("Participante Teste", "teste@example.com");
+
+            await _leilaoService.CriarLeilao(leilao);
             await _leilaoService.AdicionarParticipanteAsync(leilao.Id, participante);
+
             var participanteAntigo = await _leilaoService.ObterParticipanteAsync(participante.Id);
             var participanteAlterado = participanteAntigo;
 
@@ -434,10 +538,11 @@ namespace Leilao
         public async Task Deve_Obter_Participante()
         {
             var leilao = new Leilao("Leilão Teste", DateTime.Now.AddDays(5), 100);
-            await _leilaoService.CriarLeilao(leilao);
-
             var participante = new Participante("Participante Teste", "teste@example.com");
+
+            await _leilaoService.CriarLeilao(leilao);
             await _leilaoService.AdicionarParticipanteAsync(leilao.Id, participante);
+
             var participanteObtido = await _leilaoService.ObterParticipanteAsync(participante.Id);
 
             Assert.NotNull(participanteObtido);
@@ -447,11 +552,11 @@ namespace Leilao
         public async Task Deve_Retornar_Lista_Participantes()
         {
             var leilao = new Leilao("Leilão Teste", DateTime.Now.AddDays(5), 100);
-            await _leilaoService.CriarLeilao(leilao);
-
             var participante = new Participante("Participante Teste", "teste@example.com");
             var participante2 = new Participante("Participante Teste2", "teste@example.com");
             var participante3 = new Participante("Participante Teste3", "teste@example.com");
+
+            await _leilaoService.CriarLeilao(leilao);
             await _leilaoService.AdicionarParticipanteAsync(leilao.Id, participante);
             await _leilaoService.AdicionarParticipanteAsync(leilao.Id, participante2);
             await _leilaoService.AdicionarParticipanteAsync(leilao.Id, participante3);
@@ -481,12 +586,12 @@ namespace Leilao
         {
             var leilao = new Leilao("Leilão Teste", DateTime.Now.AddDays(5), 100);
             var participante = new Participante("Maria", "maria@email.com");
+            var valorDoLance = 150;
+
 
             await _leilaoService.CriarLeilao(leilao);
             await _leilaoService.AdicionarParticipanteAsync(leilao.Id, participante);
             await _leilaoService.AbrirLeilao(leilao.Id);
-
-            var valorDoLance = 150;
             await _leilaoService.AdicionarLanceAsync(leilao.Id, participante, valorDoLance);
 
             var leilaoObtido = await _leilaoRepository.ObterLeilaoPorIdAsync(leilao.Id);

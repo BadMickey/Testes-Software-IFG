@@ -20,6 +20,26 @@ namespace Leilao
 
         public async Task CriarLeilao(Leilao leilao) => await _leilaoRepository.AdicionarLeilao(leilao);
 
+        public async Task EditarLeilao(Leilao leilao)
+        {
+            var leilaoAnterior = await _leilaoRepository.ObterLeilaoPorIdAsync(leilao.Id);
+            
+            if (leilaoAnterior == null)
+            {
+                throw new ArgumentException("Leilão não encontrado.");
+            }
+            if (leilaoAnterior.Status != EstadoLeilao.INATIVO)
+            {
+                throw new InvalidOperationException("Somente leilões inativos podem ser editados.");
+            }
+
+            leilaoAnterior.Titulo = leilao.Titulo;
+            leilaoAnterior.DataExpiracao = leilao.DataExpiracao;
+            leilaoAnterior.LanceMinimo = leilao.LanceMinimo;
+
+            await _leilaoRepository.AtualizarLeilao(leilaoAnterior);
+        }
+
         public async Task AbrirLeilao(Guid id)
         {
             var leilao = await _leilaoRepository.ObterLeilaoPorIdAsync(id);
@@ -52,6 +72,12 @@ namespace Leilao
                 Console.WriteLine($"O leilao '{leilao.Titulo}' não teve ganhador!");
                 return false;
             }
+        }
+
+        public async Task<List<Leilao>> ListarTodosLeiloes()
+        {
+            List<Leilao> leiloes = await _leilaoRepository.ListarTodosLeiloes();
+            return leiloes;
         }
 
         public async Task AdicionarParticipanteAsync(Guid leilaoid, Participante participante)

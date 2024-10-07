@@ -15,11 +15,11 @@ namespace Leilao
 
         [Required]
         [MaxLength(100)]
-        public string Titulo { get; private set; }
+        public string Titulo { get; set; }
         public DateTime? DataInicio { get; private set; }
 
         [Required]
-        public DateTime DataExpiracao { get; private set; }
+        public DateTime DataExpiracao { get; set; }
 
         [Required]
         public EstadoLeilao Status { get; private set; }
@@ -27,7 +27,7 @@ namespace Leilao
         public List<Participante> Participantes { get; private set; } = new List<Participante>();
 
         [Column(TypeName = "decimal(18,2)")]
-        public decimal LanceMinimo { get; private set; }
+        public decimal LanceMinimo { get; set; }
 
         public Leilao(string titulo, DateTime dataExpiracao, decimal lanceMinimo)
         {

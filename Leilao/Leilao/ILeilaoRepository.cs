@@ -17,6 +17,7 @@ namespace Leilao
         Task<List<Participante>> ObterTodosParticipantesAsync();
         Task<Participante> ObterParticipantePorIdAsync(Guid id); // Novo método
         Task AtualizarLeilao(Leilao leilao);
+        Task<List<Leilao>> ListarTodosLeiloes();
         Task<List<Leilao>> ListarLeiloes(EstadoLeilao? status);
     }
 }

@@ -14,7 +14,6 @@ namespace Leilao
         {
             _dbContext = dbContext;
         }
-
         public async Task AdicionarLeilao(Leilao leilao)
         {
             await _dbContext.Leiloes.AddAsync(leilao);
@@ -79,6 +78,10 @@ namespace Leilao
             await _dbContext.SaveChangesAsync();
         }
 
+        public async Task<List<Leilao>> ListarTodosLeiloes()
+        {
+            return await _dbContext.Leiloes.ToListAsync();
+        }
         public async Task<List<Leilao>> ListarLeiloes(EstadoLeilao? status)
         {
             return status.HasValue
