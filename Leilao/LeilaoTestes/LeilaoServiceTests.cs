@@ -16,7 +16,6 @@ namespace Leilao
         private readonly ServiceProvider _serviceProvider;
         private readonly LeilaoDbContext _dbContext;
         private readonly Mock<IEmailService> _emailServiceMock;
-        private readonly ILeilaoRepository _leilaoRepository;
         private readonly LeilaoService _leilaoService;
 
         public LeilaoServiceTests()
@@ -39,7 +38,6 @@ namespace Leilao
             _dbContext.Database.EnsureCreated();
 
             _leilaoService = _serviceProvider.GetRequiredService<LeilaoService>();
-            _leilaoRepository = _serviceProvider.GetRequiredService<ILeilaoRepository>();
 
         }
         public void Dispose()
@@ -92,7 +90,7 @@ namespace Leilao
             await _leilaoService.AbrirLeilao(leilao3.Id);
             await _leilaoService.AbrirLeilao(leilao4.Id);
 
-            var leiloesAbertos = await _leilaoRepository.ListarLeiloes(EstadoLeilao.ABERTO);
+            var leiloesAbertos = await _leilaoService.ListarLeiloes(EstadoLeilao.ABERTO);
             Assert.Equal(2, leiloesAbertos.Count);
             Assert.Contains(leilao3, leiloesAbertos);
             Assert.Contains(leilao4, leiloesAbertos);//Testando se vai retornar a lista de leilões abertos
@@ -115,7 +113,7 @@ namespace Leilao
             await _leilaoService.FinalizarLeilao(leilao3.Id);
             await _leilaoService.FinalizarLeilao(leilao4.Id);
 
-            var leiloesFinalizados = await _leilaoRepository.ListarLeiloes(EstadoLeilao.FINALIZADO);
+            var leiloesFinalizados = await _leilaoService.ListarLeiloes(EstadoLeilao.FINALIZADO);
             Assert.Equal(2, leiloesFinalizados.Count);
             Assert.Contains(leilao3, leiloesFinalizados);
             Assert.Contains(leilao4, leiloesFinalizados);//Testando se vai retornar a lista de leilões Finalizados
@@ -138,7 +136,7 @@ namespace Leilao
             await _leilaoService.ExpirarLeilao(leilao3.Id);
             await _leilaoService.ExpirarLeilao(leilao4.Id);
 
-            var leiloesExpirados = await _leilaoRepository.ListarLeiloes(EstadoLeilao.EXPIRADO);
+            var leiloesExpirados = await _leilaoService.ListarLeiloes(EstadoLeilao.EXPIRADO);
             Assert.Equal(2, leiloesExpirados.Count);
             Assert.Contains(leilao3, leiloesExpirados);
             Assert.Contains(leilao4, leiloesExpirados);//Testando se vai retornar a lista de leilões Expirados
@@ -156,7 +154,7 @@ namespace Leilao
             await _leilaoService.CriarLeilao(leilao3);
             await _leilaoService.AbrirLeilao(leilao3.Id);
 
-            var leiloesInativos = await _leilaoRepository.ListarLeiloes(EstadoLeilao.INATIVO);
+            var leiloesInativos = await _leilaoService.ListarLeiloes(EstadoLeilao.INATIVO);
             Assert.Equal(2, leiloesInativos.Count);
             Assert.Contains(leilao, leiloesInativos);
             Assert.Contains(leilao2, leiloesInativos);//Testando se vai retornar a lista de leilões inativos
@@ -175,7 +173,7 @@ namespace Leilao
             await _leilaoService.CriarLeilao(leilao3);
             await _leilaoService.CriarLeilao(leilao4);
 
-            var leilaoObtido = await _leilaoRepository.ObterLeilaoPorIdAsync(leilao.Id);
+            var leilaoObtido = await _leilaoService.ObterLeilaoPorIdAsync(leilao.Id);
 
             Assert.NotNull(leilaoObtido);
         }
@@ -221,7 +219,7 @@ namespace Leilao
             leilao.LanceMinimo = 200;
             await _leilaoService.EditarLeilao(leilao);
 
-            var leilaoAlterado = await _leilaoRepository.ObterLeilaoPorIdAsync(leilao.Id);
+            var leilaoAlterado = await _leilaoService.ObterLeilaoPorIdAsync(leilao.Id);
 
             Assert.Equal("Leilao teste modificado", leilaoAlterado.Titulo);
             Assert.Equal(leilao.DataExpiracao, leilaoAlterado.DataExpiracao);
@@ -235,7 +233,7 @@ namespace Leilao
 
             await _leilaoService.CriarLeilao(leilao);
 
-            var leilaoObtido = await _leilaoRepository.ObterLeilaoPorIdAsync(leilao.Id);
+            var leilaoObtido = await _leilaoService.ObterLeilaoPorIdAsync(leilao.Id);
             Assert.Equal(EstadoLeilao.INATIVO, leilaoObtido.Status); //Testando se o leilão irá ser criado apenas com status inativo
         }
 
@@ -247,7 +245,7 @@ namespace Leilao
             await _leilaoService.CriarLeilao(leilao);
             await _leilaoService.AbrirLeilao(leilao.Id);
 
-            var leilaoObtido = await _leilaoRepository.ObterLeilaoPorIdAsync(leilao.Id);
+            var leilaoObtido = await _leilaoService.ObterLeilaoPorIdAsync(leilao.Id);
             Assert.Equal(EstadoLeilao.ABERTO, leilaoObtido.Status); //Testando se o leilão irá ser aberto com status aberto
         }
 
@@ -270,7 +268,7 @@ namespace Leilao
             await _leilaoService.CriarLeilao(leilao);
             await _leilaoService.ExpirarLeilao(leilao.Id);
 
-            var leilaoObtido = await _leilaoRepository.ObterLeilaoPorIdAsync(leilao.Id);
+            var leilaoObtido = await _leilaoService.ObterLeilaoPorIdAsync(leilao.Id);
             Assert.Equal(EstadoLeilao.EXPIRADO, leilaoObtido.Status); //Teste para expirar o leilão quando a data tiver expirada
         }
 
@@ -282,7 +280,7 @@ namespace Leilao
             await _leilaoService.CriarLeilao(leilao);
             await _leilaoService.AbrirLeilao(leilao.Id);
 
-            var leilaoObtido = await _leilaoRepository.ObterLeilaoPorIdAsync(leilao.Id);
+            var leilaoObtido = await _leilaoService.ObterLeilaoPorIdAsync(leilao.Id);
             await Assert.ThrowsAsync<InvalidOperationException>(() =>
                 _leilaoService.ExpirarLeilao(leilao.Id)); //Teste para não expirar o leilão sem atingir a data de expiração
         }
@@ -297,7 +295,7 @@ namespace Leilao
             await _leilaoService.ExpirarLeilao(leilao.Id);
             await _leilaoService.FinalizarLeilao(leilao.Id);
 
-            var leilaoObtido = await _leilaoRepository.ObterLeilaoPorIdAsync(leilao.Id);
+            var leilaoObtido = await _leilaoService.ObterLeilaoPorIdAsync(leilao.Id);
             Assert.Equal(EstadoLeilao.FINALIZADO, leilaoObtido.Status); //Teste para finalizar o leilão expirado
         }
 
@@ -310,7 +308,7 @@ namespace Leilao
             await _leilaoService.AbrirLeilao(leilao.Id);
             await _leilaoService.FinalizarLeilao(leilao.Id);
 
-            var leilaoObtido = await _leilaoRepository.ObterLeilaoPorIdAsync(leilao.Id);
+            var leilaoObtido = await _leilaoService.ObterLeilaoPorIdAsync(leilao.Id);
             Assert.Equal(EstadoLeilao.FINALIZADO, leilaoObtido.Status);
         }
 
@@ -321,7 +319,7 @@ namespace Leilao
 
             await _leilaoService.CriarLeilao(leilao);
 
-            var leilaoObtido = await _leilaoRepository.ObterLeilaoPorIdAsync(leilao.Id);
+            var leilaoObtido = await _leilaoService.ObterLeilaoPorIdAsync(leilao.Id);
             await Assert.ThrowsAsync<InvalidOperationException>(() =>
                 _leilaoService.FinalizarLeilao(leilao.Id));
         }
@@ -508,7 +506,7 @@ namespace Leilao
             await _leilaoService.CriarLeilao(leilao);
             await _leilaoService.AdicionarParticipanteAsync(leilao.Id, participante);
 
-            var leilaoAtualizado = await _leilaoRepository.ObterLeilaoPorIdAsync(leilao.Id);
+            var leilaoAtualizado = await _leilaoService.ObterLeilaoPorIdAsync(leilao.Id);
             Assert.Contains(leilaoAtualizado.Participantes, p => p.Id == participante.Id);
         }
 
@@ -594,7 +592,7 @@ namespace Leilao
             await _leilaoService.AbrirLeilao(leilao.Id);
             await _leilaoService.AdicionarLanceAsync(leilao.Id, participante, valorDoLance);
 
-            var leilaoObtido = await _leilaoRepository.ObterLeilaoPorIdAsync(leilao.Id);
+            var leilaoObtido = await _leilaoService.ObterLeilaoPorIdAsync(leilao.Id);
             var lance = await _leilaoService.ObterLanceporIdAsync(participante.Id, valorDoLance);
 
 

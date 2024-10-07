@@ -82,6 +82,7 @@ namespace Leilao
         {
             return await _dbContext.Leiloes.ToListAsync();
         }
+
         public async Task<List<Leilao>> ListarLeiloes(EstadoLeilao? status)
         {
             return status.HasValue

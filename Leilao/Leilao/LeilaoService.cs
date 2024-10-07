@@ -74,10 +74,22 @@ namespace Leilao
             }
         }
 
+        public async Task<List<Leilao>> ListarLeiloes(EstadoLeilao status)
+        {
+            List<Leilao> leiloes = await _leilaoRepository.ListarLeiloes(status);
+            return leiloes;
+        }
+
         public async Task<List<Leilao>> ListarTodosLeiloes()
         {
             List<Leilao> leiloes = await _leilaoRepository.ListarTodosLeiloes();
             return leiloes;
+        }
+
+        public async Task<Leilao> ObterLeilaoPorIdAsync(Guid leilaoid)
+        {
+            var leilaoObtido = await _leilaoRepository.ObterLeilaoPorIdAsync(leilaoid);
+            return leilaoObtido;
         }
 
         public async Task AdicionarParticipanteAsync(Guid leilaoid, Participante participante)
